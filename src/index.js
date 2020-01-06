@@ -16,6 +16,19 @@ function createTextElement(text) {
   }
 }
 function createElement(type, props, ...children) {
+  debugger
+  const returnObject = {
+    type,
+    props: {
+      ...props,
+      children: children.map(child =>
+        typeof child === "object"
+          ? child
+          : createTextElement(child)
+      )
+    }
+  }
+  console.log(returnObject);
   return {
     type,
     props: {
@@ -29,28 +42,50 @@ function createElement(type, props, ...children) {
   }
 }
 
-const Didact={
-  createElement
+function render(element, container) {
+  const dom = element.type === "TEXT_ELEMENT"
+    ? document.createTextNode(" ")
+    : document.createElement(element.type);
+
+  const isProperty = key => key !== "children";
+
+  Object.keys(element.props)
+    .filter(isProperty)
+    .forEach(name => {
+      dom[name] = element.props[name];
+    });
+
+  element.props.children.forEach(child =>
+    render(child, dom)
+  )
+  container.appendChild(dom);
+}
+
+
+const Didact = {
+  createElement,
+  render
 }
 
 // const element = Didact.createElement(
 //   "div",
 //   { id: "foo" },
-//   Didact.createElement("a", {},[ "bar"]),
-//   Didact.createElement("b",{}, [])
+//   Didact.createElement("a", null,[ "bar"]),
+//   Didact.createElement("b")
 // )
 
 /** @jsx Didact.createElement */
 const element = (
   <div id="foo">
-    <a>bar</a>
-    <b/>
+  <a >sanjoy</a>
+  <b/>
   </div>);
 
+console.log("element==", element);
 
 const container = document.getElementById("root");
 
-ReactDOM.render(element, container);
+Didact.render(element, container);
 
 
 

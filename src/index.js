@@ -74,14 +74,28 @@ const Didact = {
 //   Didact.createElement("b")
 // )
 
+let nextUnitOfWOrk = null;
+function workLoop(deadline){
+  let shouldYield = false;
+  while(nextUnitOfWOrk && !shouldYield){
+    nextUnitOfWOrk = performUnitOfWork(nextUnitOfWOrk);
+    shouldYield = deadline.timeRemaining() < 1;
+  }
+  requestIdleCallback(workLoop);
+}
+requestIdleCallback(workLoop);
+function performUnitOfWork(nextUnitOfWOrk){
+  //TODO
+}
+
+
 /** @jsx Didact.createElement */
 const element = (
-  <div id="foo">
-  <a >sanjoy</a>
-  <b/>
+  <div style="background: salmon">
+    <h1>Hello World</h1>
+    <h2 style="text-align:right">from Didact</h2>
   </div>);
 
-console.log("element==", element);
 
 const container = document.getElementById("root");
 

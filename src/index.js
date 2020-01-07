@@ -42,12 +42,13 @@ function createElement(type, props, ...children) {
 }
 
 function render(element, container) {
-  nextUnitOfWOrk = {
+  wipRoot = {
     dom: container,
     props:{
       children: [element]
     }
   };
+  nextUnitOfWOrk = wipRoot;
 
   // const dom = element.type === "TEXT_ELEMENT"
   //   ? document.createTextNode(" ")
@@ -67,6 +68,7 @@ function render(element, container) {
   // container.appendChild(dom);
 }
 
+let wipRoot = null;
 
 const Didact = {
   createElement,
@@ -82,11 +84,18 @@ const Didact = {
 
 let nextUnitOfWOrk = null;
 
+function commitRoot(){
+  //TODO add node to dom
+}
+
 function workLoop(deadline) {
   let shouldYield = false;
   while (nextUnitOfWOrk && !shouldYield) {
     nextUnitOfWOrk = performUnitOfWork(nextUnitOfWOrk);
     shouldYield = deadline.timeRemaining() < 1;
+  }
+  if(!nextUnitOfWOrk && wipRoot){
+    commitRoot();
   }
   requestIdleCallback(workLoop);
 }

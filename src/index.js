@@ -16,7 +16,6 @@ function createTextElement(text) {
   }
 }
 function createElement(type, props, ...children) {
-  debugger
   const returnObject = {
     type,
     props: {
@@ -43,22 +42,29 @@ function createElement(type, props, ...children) {
 }
 
 function render(element, container) {
-  const dom = element.type === "TEXT_ELEMENT"
-    ? document.createTextNode(" ")
-    : document.createElement(element.type);
+  nextUnitOfWOrk = {
+    dom: container,
+    props:{
+      children: [element]
+    }
+  };
 
-  const isProperty = key => key !== "children";
+  // const dom = element.type === "TEXT_ELEMENT"
+  //   ? document.createTextNode(" ")
+  //   : document.createElement(element.type);
 
-  Object.keys(element.props)
-    .filter(isProperty)
-    .forEach(name => {
-      dom[name] = element.props[name];
-    });
+  // const isProperty = key => key !== "children";
 
-  element.props.children.forEach(child =>
-    render(child, dom)
-  )
-  container.appendChild(dom);
+  // Object.keys(element.props)
+  //   .filter(isProperty)
+  //   .forEach(name => {
+  //     dom[name] = element.props[name];
+  //   });
+
+  // element.props.children.forEach(child =>
+  //   render(child, dom)
+  // )
+  // container.appendChild(dom);
 }
 
 
@@ -75,25 +81,81 @@ const Didact = {
 // )
 
 let nextUnitOfWOrk = null;
-function workLoop(deadline){
+
+function workLoop(deadline) {
   let shouldYield = false;
-  while(nextUnitOfWOrk && !shouldYield){
+  while (nextUnitOfWOrk && !shouldYield) {
     nextUnitOfWOrk = performUnitOfWork(nextUnitOfWOrk);
     shouldYield = deadline.timeRemaining() < 1;
   }
   requestIdleCallback(workLoop);
 }
+
 requestIdleCallback(workLoop);
-function performUnitOfWork(nextUnitOfWOrk){
-  //TODO
+
+function performUnitOfWork(fiber) {
+  //TODO add dom node
+  // todo create new fibers
+  // todo return next unit of works
+
+  if(!fiber.dom){
+    fiber.dom = createDom(fiber);
+  }
+  if (fiber.parent) {
+    fiber.parent.dom.appendChild(fiber.dom);
+  }
+
+  const elements = fibers.props.children;
+  let index = 0;
+  let prevSibling = null;
+  while (index < elements.length) {
+    let element = elements[index];
+    const newFiber = {
+      type: element.type,
+      props: element.props,
+      parent: fiber,
+      dom: null
+    }
+
+    if (index === 0) {
+      fiber.child = newFiber;
+    } else {
+      prevSibling.sibling = newFiber
+    }
+    prevSibling = newFiber;
+    index++;
+  }
+
+  if(fiber.child){
+    return fiber.child;
+  }
+  let nextFiber = fiber;
+  while(nextFiber){
+    if(nextFiber.sibling){
+      return nextFiber.sibling;
+    }
+    nextFiber = nextFiber.parent;
+  }
+
+
 }
 
 
+// /** @jsx Didact.createElement */
+// const element = (
+//   <div style="background: salmon">
+//     <h1>Hello World</h1>
+//     <h2 style="text-align:right">from Didact</h2>
+//   </div>);
+
 /** @jsx Didact.createElement */
 const element = (
-  <div style="background: salmon">
-    <h1>Hello World</h1>
-    <h2 style="text-align:right">from Didact</h2>
+  <div>
+    <h1>
+      <p>paragraph</p>
+      <a>anchor</a>
+    </h1>
+    <h2 />
   </div>);
 
 
